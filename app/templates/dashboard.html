@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Talent Matcher</title></head>
+<body>
+  <h2>Upload Resumes</h2>
+  <form action="/upload/" enctype="multipart/form-data" method="post">
+    Job Description:<br>
+    <textarea name="job_description" rows="5" cols="50"></textarea><br><br>
+    Select resumes (PDFs):<br>
+    <input type="file" name="files" multiple><br><br>
+    <input type="submit" value="Upload and Match">
+  </form>
+  {% if results %}
+    <h3>Top Matched Candidates:</h3>
+    <ul>
+      {% for name, score in results %}
+        <li>{{ name }} - Match Score: {{ score }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</body>
+</html>
