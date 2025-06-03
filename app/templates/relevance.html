@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900"
+    />
+    <title>Resume Relevance Checker</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body>
+    <div class="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
+      <div class="layout-container flex h-full grow flex-col">
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f5] px-10 py-3">
+          <div class="flex items-center gap-4 text-[#111418]">
+            <div class="size-4">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <h2 class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em]">Resume Checker</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/">Home</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/relevance">Relevance</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/suspicious">AI Detection</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="#">Contact</a>
+            </div>
+            <button
+              class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0c7ff2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+            >
+              <span class="truncate">Sign Up</span>
+            </button>
+          </div>
+        </header>
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div class="flex flex-wrap justify-between gap-3 p-4">
+              <div class="flex min-w-72 flex-col gap-3">
+                <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight">Resume Relevance Checker</p>
+                <p class="text-[#60758a] text-sm font-normal leading-normal">Upload multiple resumes and a job description to see how well they match.</p>
+              </div>
+            </div>
+            
+            <form action="/upload/" method="post" enctype="multipart/form-data" id="relevanceForm">
+              <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                  <p class="text-[#111418] text-base font-medium leading-normal pb-2">Upload Resumes (Multiple PDFs)</p>
+                  <input
+                    type="file"
+                    name="files"
+                    multiple
+                    accept=".pdf"
+                    required
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] focus:outline-0 focus:ring-0 border border-[#dbe0e6] bg-white focus:border-[#dbe0e6] h-14 placeholder:text-[#60758a] p-[15px] text-base font-normal leading-normal"
+                  />
+                </label>
+              </div>
+              
+              <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+                <label class="flex flex-col min-w-40 flex-1">
+                  <p class="text-[#111418] text-base font-medium leading-normal pb-2">Job Description</p>
+                  <textarea
+                    name="job_description"
+                    placeholder="Paste the job description here..."
+                    required
+                    rows="6"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] focus:outline-0 focus:ring-0 border border-[#dbe0e6] bg-white focus:border-[#dbe0e6] placeholder:text-[#60758a] p-[15px] text-base font-normal leading-normal"
+                  ></textarea>
+                </label>
+              </div>
+              
+              <div class="flex px-4 py-3 justify-start">
+                <button
+                  type="submit"
+                  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0c7ff2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+                >
+                  <span class="truncate">Check Relevance</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Results Section -->
+            {% if results %}
+            <div class="mt-8">
+              <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Resume Rankings</h2>
+              {% for name, relevance_score, ai_score, highlighted_path in results %}
+              <div class="flex flex-col gap-3 p-4 border-b border-[#f0f2f5]">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-[#111418] text-lg font-medium">{{ name }}</h3>
+                  <a href="/download/highlighted_{{ name }}" 
+                     class="text-[#0c7ff2] text-sm font-medium hover:underline">
+                    Download Highlighted PDF
+                  </a>
+                </div>
+                
+                <div class="flex gap-6 justify-between">
+                  <p class="text-[#111418] text-base font-medium leading-normal">Relevance Score</p>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">{{ relevance_score }}%</p>
+                </div>
+                
+                
+                <div class="flex gap-6 justify-between">
+                  <p class="text-[#111418] text-base font-medium leading-normal">AI Suspicion Score</p>
+                  <p class="text-[#111418] text-sm font-normal leading-normal">{{ ai_score }}%</p>
+                </div>
+               
+                
+                <p class="text-[#60758a] text-sm font-normal leading-normal">
+                  {% if relevance_score >= 70 %}
+                    Excellent match for this position!
+                  {% elif relevance_score >= 50 %}
+                    Good match with room for improvement.
+                  {% else %}
+                    Consider tailoring the resume more closely to the job requirements.
+                  {% endif %}
+                  
+                  {% if ai_score >= 70 %}
+                    High AI detection - review for authenticity.
+                  {% elif ai_score >= 40 %}
+                    Moderate AI detection - some sections may need revision.
+                  {% else %}
+                    Low AI detection - appears authentic.
+                  {% endif %}
+                </p>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

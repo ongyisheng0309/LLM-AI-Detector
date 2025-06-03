@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900"
+    />
+    <title>AI Suspicion Checker</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body>
+    <div class="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
+      <div class="layout-container flex h-full grow flex-col">
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f5] px-10 py-3">
+          <div class="flex items-center gap-4 text-[#111418]">
+            <div class="size-4">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <h2 class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em]">Resume Checker</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/">Home</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/relevance">Relevance</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="/suspicious">AI Detection</a>
+              <a class="text-[#111418] text-sm font-medium leading-normal" href="#">Contact</a>
+            </div>
+            <button
+              class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0c7ff2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+            >
+              <span class="truncate">Sign Up</span>
+            </button>
+          </div>
+        </header>
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div class="flex flex-wrap justify-between gap-3 p-4">
+              <div class="flex min-w-72 flex-col gap-3">
+                <p class="text-[#111418] tracking-light text-[32px] font-bold leading-tight">AI Suspicion Checker</p>
+                <p class="text-[#60758a] text-sm font-normal leading-normal">Upload your document to check the likelihood of AI-generated content.</p>
+              </div>
+            </div>
+            
+            <form action="/check-ai/" method="post" enctype="multipart/form-data" id="suspiciousForm">
+              <div class="flex flex-col p-4">
+                <div class="flex flex-col items-center gap-6 rounded-lg border-2 border-dashed border-[#dbe0e6] px-6 py-14">
+                  <div class="flex max-w-[480px] flex-col items-center gap-2">
+                    <p class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] max-w-[480px] text-center">Drag and drop a file here, or</p>
+                    <p class="text-[#111418] text-sm font-normal leading-normal max-w-[480px] text-center">Supported formats: PDF</p>
+                  </div>
+                  <input
+                    type="file"
+                    name="file"
+                    accept=".pdf"
+                    required
+                    id="fileInput"
+                    class="hidden"
+                  />
+                  <button
+                    type="button"
+                    onclick="document.getElementById('fileInput').click()"
+                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f5] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]"
+                  >
+                    <span class="truncate">Browse Files</span>
+                  </button>
+                  <div id="fileStatus" class="hidden text-[#111418] text-sm font-medium"></div>
+                </div>
+              </div>
+              
+              <div class="flex px-4 py-3 justify-center">
+                <button
+                  type="submit"
+                  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0c7ff2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+                >
+                  <span class="truncate">Analyze Document</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Loading Section -->
+            <div id="loadingSection" class="hidden flex flex-col gap-3 p-4">
+              <div class="flex gap-6 justify-between">
+                <p class="text-[#111418] text-base font-medium leading-normal">Analyzing...</p>
+              </div>
+              <div class="rounded bg-[#dbe0e6]">
+                <div class="h-2 rounded bg-[#111418] animate-pulse" style="width: 50%;"></div>
+              </div>
+              <p class="text-[#60758a] text-sm font-normal leading-normal">This may take a few seconds.</p>
+            </div>
+
+            <!-- Results Section -->
+            {% if ai_result %}
+            <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Results</h2>
+            <div class="flex flex-wrap gap-4 p-4">
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#f0f2f5]">
+                <p class="text-[#111418] text-base font-medium leading-normal">AI Suspicion Score</p>
+                <p class="text-[#111418] tracking-light text-2xl font-bold leading-tight">{{ (ai_result.overall_score * 100) | round(1) }}%</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#f0f2f5]">
+                <p class="text-[#111418] text-base font-medium leading-normal">Flagged Sections</p>
+                <p class="text-[#111418] tracking-light text-2xl font-bold leading-tight">{{ ai_result.flagged_sections | length }}</p>
+              </div>
+            </div>
+            
+            <p class="text-[#111418] text-base font-normal leading-normal pb-3 pt-1 px-4">
+              {% if ai_result.overall_score >= 0.7 %}
+                This score indicates a high likelihood that the content was generated by AI. Consider reviewing and revising the document to ensure authenticity and personal voice.
+              {% elif ai_result.overall_score >= 0.4 %}
+                Moderate AI detection. Some sections may benefit from revision to sound more natural and personal.
+              {% else %}
+                Low AI detection score. The document appears to be primarily human-written.
+              {% endif %}
+            </p>
+
+            <!-- Detailed Section Analysis -->
+            {% if ai_result.flagged_sections %}
+            <div class="mt-6">
+              <h3 class="text-[#111418] text-lg font-bold leading-tight px-4 pb-3">Flagged Sections</h3>
+              {% for section in ai_result.flagged_sections %}
+              <div class="flex flex-col gap-2 p-4 border-b border-[#f0f2f5]">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-[#111418] text-base font-medium">{{ section.name }}</h4>
+                  <span class="text-[#ff6b6b] text-sm font-medium">{{ (section.score * 100) | round(1) }}% suspicious</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  {% for indicator in section.indicators %}
+                  <span class="bg-[#fef2f2] text-[#dc2626] px-2 py-1 rounded text-xs">
+                    {{ indicator.name.replace('_', ' ').title() }}
+                  </span>
+                  {% endfor %}
+                </div>
+                {% if section.evidence %}
+                <div class="mt-2">
+                  <p class="text-[#60758a] text-sm font-normal">Issues found:</p>
+                  <ul class="list-disc list-inside text-[#60758a] text-sm ml-4">
+                    {% for evidence in section.evidence %}
+                    <li>{{ evidence }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Download Highlighted PDF -->
+            {% if filename %}
+            <div class="flex px-4 py-3 justify-center">
+              <a href="/download/highlighted_{{ filename }}"
+                 class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#10b981] text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                <span class="truncate">Download Highlighted PDF</span>
+              </a>
+            </div>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Handle file selection display
+      document.getElementById('fileInput').addEventListener('change', function(e) {
+        const fileStatus = document.getElementById('fileStatus');
+        if (e.target.files.length > 0) {
+          fileStatus.textContent = `Selected: ${e.target.files[0].name}`;
+          fileStatus.classList.remove('hidden');
+        } else {
+          fileStatus.classList.add('hidden');
+        }
+      });
+
+      // Handle form submission
+      document.getElementById('suspiciousForm').addEventListener('submit', function(e) {
+        const loadingSection = document.getElementById('loadingSection');
+        loadingSection.classList.remove('hidden');
+      });
+
+      // Drag and drop functionality
+      const dropZone = document.querySelector('.border-dashed');
+      
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-[#0c7ff2]', 'bg-blue-50');
+      });
+
+      dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#0c7ff2]', 'bg-blue-50');
+      });
+
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-[#0c7ff2]', 'bg-blue-50');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          document.getElementById('fileInput').files = files;
+          const event = new Event('change', { bubbles: true });
+          document.getElementById('fileInput').dispatchEvent(event);
+        }
+      });
+    </script>
+</body>
+</html>

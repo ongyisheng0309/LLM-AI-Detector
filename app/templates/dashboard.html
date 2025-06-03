@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><title>Talent Matcher</title></head>
+<head>
+    <!-- Same head content as other pages -->
+</head>
 <body>
-  <h2>Upload Resumes</h2>
-  <form action="/upload/" enctype="multipart/form-data" method="post">
-    Job Description:<br>
-    <textarea name="job_description" rows="5" cols="50"></textarea><br><br>
-    Select resumes (PDFs):<br>
-    <input type="file" name="files" multiple><br><br>
-    <input type="submit" value="Upload and Match">
-  </form>
-  {% if results %}
-    <h3>Top Matched Candidates:</h3>
-    <ul>
-      {% for name, score in results %}
-        <li>{{ name }} - Match Score: {{ score }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+    <div class="relative flex size-full min-h-screen flex-col bg-white">
+        <!-- Same header as other pages -->
+        <div class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-[#111418] mb-4">Welcome to Resume Checker</h1>
+                <p class="text-[#60758a] mb-8">Choose a tool to get started</p>
+                <div class="flex gap-4 justify-center">
+                    <a href="/relevance" class="bg-[#0c7ff2] text-white px-6 py-3 rounded-lg font-medium">
+                        Check Relevance
+                    </a>
+                    <a href="/suspicious" class="bg-[#10b981] text-white px-6 py-3 rounded-lg font-medium">
+                        AI Detection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
