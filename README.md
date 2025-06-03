@@ -32,14 +32,14 @@ This is a prototype web application built with **FastAPI** that streamlines the 
 bash
 git clone https://github.com/ongyisheng0309/LLM-AI-Detector.git
 
-### 3. Install Dependencies
+### 2. Install Dependencies
 
 pip install -r requirements.txt
 
-
-### 4. Run the App
+### 3. Run the App
 
 uvicorn app.main:app --reload
+
 Then open your browser to:
 http://127.0.0.1:8000/
 
