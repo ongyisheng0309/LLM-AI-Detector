@@ -84,7 +84,6 @@ class AIResumeDetector:
         if score > 0.2:
             results["indicators"].append({"name": "generic_language", "score": score})
             results["evidence"].append(f"Found {buzzword_count} buzzwords")
-            # Highlight buzzwords
             for word in words:
                 if word in self.buzzwords:
                     highlighted_elements["words"].append(word)
@@ -100,7 +99,6 @@ class AIResumeDetector:
         if score > 0.7:
             results["indicators"].append({"name": "uniform_structure", "score": score})
             results["evidence"].append("Highly uniform line lengths")
-            # Highlight all sentences in this section
             sentences = re.split(r'[.!?]+\s+', content)
             for sentence in sentences:
                 if sentence.strip():
@@ -126,7 +124,6 @@ class AIResumeDetector:
         if score > 0.2:
             results["indicators"].append({"name": "vague_quantifiers", "score": score})
             results["evidence"].append(f"Found {vague_count} vague quantifiers")
-            # Highlight vague quantifiers
             for word in words:
                 if word in self.vague_quantifiers:
                     highlighted_elements["words"].append(word)
@@ -138,7 +135,6 @@ class AIResumeDetector:
         if score > 0.5:
             results["indicators"].append({"name": "lack_details", "score": score})
             results["evidence"].append("Lacking specific dates or numbers")
-            # Highlight sentences lacking specifics
             sentences = re.split(r'[.!?]+\s+', content)
             for sentence in sentences:
                 if sentence.strip() and not (re.search(r'\b(19|20)\d{2}\b', sentence) or re.search(r'\b\d+\b', sentence)):

@@ -11,6 +11,35 @@
     <title>Resume Relevance Checker</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .pulse-dot:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        .pulse-dot:nth-child(3) {
+            animation-delay: 1s;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
     <div class="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
@@ -50,13 +79,13 @@
             <form action="/upload/" method="post" enctype="multipart/form-data" id="relevanceForm">
               <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label class="flex flex-col min-w-40 flex-1">
-                  <p class="text-[#111418] text-base font-medium leading-normal pb-2">Upload Resumes (Multiple PDFs)</p>
+                  <p class="text-[#111418] text-base font-medium leading-normal pb-2">Upload Resumes (PDFs and CSV)</p>
                   <input
                     type="file"
                     name="files"
-                    multiple
-                    accept=".pdf"
+                    multiple accept=".pdf,.csv"
                     required
+                    id="fileInput"
                     class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] focus:outline-0 focus:ring-0 border border-[#dbe0e6] bg-white focus:border-[#dbe0e6] h-14 placeholder:text-[#60758a] p-[15px] text-base font-normal leading-normal"
                   />
                 </label>
@@ -78,6 +107,7 @@
               <div class="flex px-4 py-3 justify-start">
                 <button
                   type="submit"
+                  id="submitButton"
                   class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0c7ff2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
                 >
                   <span class="truncate">Check Relevance</span>
@@ -85,56 +115,154 @@
               </div>
             </form>
 
+            <!-- Enhanced Progress Section -->
+            <div id="progressSection" class="hidden mt-8">
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-[#111418] text-lg font-bold">Processing Files</h3>
+                  <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></div>
+                    <div class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></div>
+                    <div class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></div>
+                  </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700" id="progressStatus">Initializing...</span>
+                    <span class="text-sm font-bold text-blue-600" id="progressPercent">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+                  </div>
+                </div>
+                
+                <!-- File Progress Details -->
+                <div class="space-y-2">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Current File:</span>
+                    <span class="font-medium text-gray-800" id="currentFile">-</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Progress:</span>
+                    <span class="font-medium text-gray-800" id="itemProgress">0/0 items</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="font-medium" id="statusIndicator">
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                        Starting
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Estimated Time -->
+                <div class="mt-4 pt-4 border-t border-blue-200">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Estimated time remaining:</span>
+                    <span class="font-medium text-gray-800" id="estimatedTime">Calculating...</span>
+                  </div>
+                </div>
+
+                <!-- Cancel Button -->
+                <div class="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    id="cancelButton"
+                    class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel Processing
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Results Section -->
             {% if results %}
-            <div class="mt-8">
-              <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Resume Rankings</h2>
+            <div class="mt-8 fade-in">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em]">Resume Rankings</h2>
+                <div class="flex items-center space-x-2 text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <span>Processing Complete</span>
+                </div>
+              </div>
               {% for name, relevance_score, ai_score, highlighted_path in results %}
-              <div class="flex flex-col gap-3 p-4 border-b border-[#f0f2f5]">
+              <div class="flex flex-col gap-3 p-6 border border-[#f0f2f5] rounded-lg mb-4 hover:shadow-md transition-shadow bg-white">
                 <div class="flex justify-between items-center">
                   <h3 class="text-[#111418] text-lg font-medium">{{ name }}</h3>
                   <a href="/download/highlighted_{{ name }}" 
-                     class="text-[#0c7ff2] text-sm font-medium hover:underline">
-                    Download Highlighted PDF
+                     class="text-[#0c7ff2] text-sm font-medium hover:underline flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Download Highlighted PDF</span>
                   </a>
                 </div>
                 
-                <div class="flex gap-6 justify-between">
-                  <p class="text-[#111418] text-base font-medium leading-normal">Relevance Score</p>
-                  <p class="text-[#111418] text-sm font-normal leading-normal">{{ relevance_score }}%</p>
+                <div class="grid grid-cols-2 gap-6">
+                  <div>
+                    <div class="flex justify-between items-center mb-2">
+                      <p class="text-[#111418] text-base font-medium">Relevance Score</p>
+                      <p class="text-[#111418] text-lg font-bold">{{ relevance_score }}%</p>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: {{ relevance_score }}%"></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div class="flex justify-between items-center mb-2">
+                      <p class="text-[#111418] text-base font-medium">AI Suspicion Score</p>
+                      <p class="text-[#111418] text-lg font-bold">{{ ai_score }}%</p>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-gradient-to-r from-yellow-400 to-red-600 h-2 rounded-full" style="width: {{ ai_score }}%"></div>
+                    </div>
+                  </div>
                 </div>
                 
-                
-                <div class="flex gap-6 justify-between">
-                  <p class="text-[#111418] text-base font-medium leading-normal">AI Suspicion Score</p>
-                  <p class="text-[#111418] text-sm font-normal leading-normal">{{ ai_score }}%</p>
-                </div>
-               
-                
-                <p class="text-[#60758a] text-sm font-normal leading-normal">
+                <p class="text-[#60758a] text-sm font-normal leading-normal mt-2">
                   {% if relevance_score >= 70 %}
-                    Excellent match for this position!
+                    <span class="text-green-600 font-medium">✓ Excellent match</span> for this position!
                   {% elif relevance_score >= 50 %}
-                    Good match with room for improvement.
+                    <span class="text-yellow-600 font-medium">~ Good match</span> with room for improvement.
                   {% else %}
-                    Consider tailoring the resume more closely to the job requirements.
+                    <span class="text-red-600 font-medium">⚠ Low match</span> - consider tailoring the resume more closely.
                   {% endif %}
                   
                   {% if ai_score >= 70 %}
-                    High AI detection - review for authenticity.
+                    <span class="text-red-600 font-medium">High AI detection</span> - review for authenticity.
                   {% elif ai_score >= 40 %}
-                    Moderate AI detection - some sections may need revision.
+                    <span class="text-yellow-600 font-medium">Moderate AI detection</span> - some sections may need revision.
                   {% else %}
-                    Low AI detection - appears authentic.
+                    <span class="text-green-600 font-medium">Low AI detection</span> - appears authentic.
                   {% endif %}
                 </p>
               </div>
               {% endfor %}
             </div>
             {% endif %}
+
+            {% if error %}
+            <div class="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-red-800 font-medium">{{ error }}</p>
+              </div>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
-</body>
-</html>
+
+    <script>
+      let progressInterval;
+      let start
