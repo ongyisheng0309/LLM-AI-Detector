@@ -31,22 +31,15 @@ This is a prototype web application built with **FastAPI** that streamlines the 
 
 bash
 git clone https://github.com/ongyisheng0309/LLM-AI-Detector.git
-cd LLM-AI-Detector
 
-### 2. Create and Activate Virtual Environment
+### 2. Install Dependencies
 
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
+pip install -r requirements.txt
 
-### 3. Install Dependencies
-
-pip install fastapi uvicorn pymupdf sentence-transformers scikit-learn spacy jinja2 python-multipart
-python -m spacy download en_core_web_sm
-
-### 4. Run the App
+### 3. Run the App
 
 uvicorn app.main:app --reload
+
 Then open your browser to:
 http://127.0.0.1:8000/
 

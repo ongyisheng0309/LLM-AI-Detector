@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+jinja2
+scikit-learn
+joblib
+sentence-transformers
+pdfminer.six
+PyMuPDF
+python-multipart
