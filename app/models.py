@@ -15,11 +15,8 @@ def train_spam_model(spam_texts, real_texts):
     joblib.dump((vectorizer, clf), 'spam_model.joblib')
 
 def is_spam(text):
-    '''
     vectorizer, clf = joblib.load('spam_model.joblib')
     return clf.predict(vectorizer.transform([text]))[0] == 1
-    '''
-    return False
 
 def compute_similarity(job_text, resume_texts):
     job_vec = model.encode(job_text, convert_to_tensor=True)
